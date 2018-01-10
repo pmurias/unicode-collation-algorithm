@@ -1,0 +1,18 @@
+{
+  "name": "unicode-collation-algorithm",
+  "version": "0.0.1",
+  "description": "Implement the TR #10 - Unicode Collation Algorithm",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Paweł Murias",
+  "license": "Artistic-2.0",
+  "devDependencies": {
+    "jest": "^22.0.5"
+  }
+}
