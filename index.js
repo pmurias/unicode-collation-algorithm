@@ -1,4 +1,12 @@
+'use strict';
 const fs = require('fs');
+
+const xregexp = require('xregexp');
+
+///transpiled version of \p{Unified_Ideograph}/u
+const isIdeograph = /^(?:[\u3400-\u4DB5\u4E00-\u9FEA\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879][\uDC00-\uDFFF]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0])$/;
+
+const isCoreHan = xregexp('^(?:\\p{InCJK_Unified_Ideographs}|\p{InCJK_Compatibility_Ideographs)$', 'A');
 
 let collationElements;
 
@@ -30,17 +38,56 @@ function readAllKeys() {
 
 function sortKey(str) {
   if (!collationElements) readAllKeys();
-  const normalized = str.normalize('NFD');
+
+  const codes = Array.from(str.normalize('NFD'));
 
   const elements = [];
 
-  for (const c of normalized) {
-    for (const element of collationElements.get(c)) {
-        //console.log('c:', c.codePointAt(0).toString(16), collationElements.get(c).map(element => element.map(value => value.toString(16))));
+  let processed = 0;
+  while (processed < codes.length) {
+    //console.log('processing', processed);
+    let attemptOffset = processed;
+    let attemptCodes = codes[processed];
+
+    //console.log('attempting', attemptCodes);
+
+    let lookedupOffset;
+    let lookedupCodes;
+
+    while (collationElements.get(attemptCodes) !== undefined) {
+      lookedupOffset = attemptOffset;
+      lookedupCodes = attemptCodes;
+
+      attemptCodes = attemptCodes + codes[++attemptOffset];
+    }
+
+    if (lookedupCodes) {
+      for (const element of collationElements.get(lookedupCodes)) {
         elements.push(element);
+      }
+      processed = lookedupOffset + 1;
+    } else {
+      const codePoint = codes[processed].codePointAt(0);
+      const unknown = codes[processed++];
+      if (0x17000 <= codePoint && codePoint <= 0x18AFF) {
+        elements.push([0xFB00,0x0020,0x0002], [(codePoint - 0x17000) | 0x8000, 0, 0]);
+      } else if (0x1B170 <= codePoint && codePoint <= 0x1B2FF) {
+        elements.push([0xFB01, 0x0020, 0x0002], [(codePoint - 0x1B170) | 0x8000, 0, 0]);
+      } else {
+        if (isIdeograph.test(unknown)) {
+          if (isCoreHan.test(unknown)) {
+            elements.push([0xFB40 + (codePoint >> 15),0x0020,0x0002]);
+          } else {
+            elements.push([0xFB80 + (codePoint >> 15),0x0020,0x0002]);
+          }
+        } else {
+           elements.push([0xFBC0 + (codePoint >> 15),0x0020,0x0002]);
+        }
+        elements.push([(codePoint & 0x7FFF) | 0x8000, 0, 0]);
+      }
     }
   }
- 
+
   let keySize = 0;
 
   for (let level=0; level < 3; level++) {
