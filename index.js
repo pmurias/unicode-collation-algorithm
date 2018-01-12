@@ -22,12 +22,10 @@ function readAllKeys() {
         console.log(line, mapping);
       }
       const codes = mapping[1].split(/\s+/).map(code => parseInt(code, 16));
-//      if (codes.length != 1) console.log(mapping[1]);
       const elements = mapping[2].match(/\[(?:(?:\.|\*)\w+)*\]/g).map(
         levels => levels.substr(1, levels.length-2).match(/(?:\.|\*)\w+/g).map(level => parseInt(level.substr(1), 16))
       );
 
-//      console.log('code:', parseInt(code, 16), mapping[2], 'elements:', elements);
 
       collationElements.set(String.fromCodePoint.apply(null, codes), elements);
     }
@@ -45,11 +43,9 @@ function sortKey(str) {
 
   let processed = 0;
   while (processed < codes.length) {
-    //console.log('processing', processed);
     let attemptOffset = processed;
     let attemptCodes = codes[processed];
 
-    //console.log('attempting', attemptCodes);
 
     let lookedupOffset;
     let lookedupCodes;
