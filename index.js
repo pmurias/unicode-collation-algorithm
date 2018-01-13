@@ -4,7 +4,7 @@ const fs = require('fs');
 const xregexp = require('xregexp');
 
 const UnicodeTrie = require('unicode-trie')
-const unorm = require('unorm');
+const unorm = require('./unorm.js');
 const path = require('path');
 
 ///transpiled version of \p{Unified_Ideograph}/u
