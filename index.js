@@ -46,28 +46,31 @@ function sortKey(str) {
   if (!collationElements) readAllKeys();
 
   const codes = Array.from(unorm.nfd(str));
-//  console.log('codepoints: ', codes, codes.map(c => c.codePointAt(0).toString(16).toUpperCase()));
 
   const elements = [];
 
   let processed = 0;
   while (processed < codes.length) {
     let attemptOffset = processed;
-    let attemptCodes = codes[processed];
+    let attemptCodes = '';
 
 
     let lookedupOffset;
     let lookedupCodes;
 
-    while (collationElements.get(attemptCodes) !== undefined) {
-      lookedupOffset = attemptOffset;
-      lookedupCodes = attemptCodes;
 
-      attemptCodes = attemptCodes + codes[++attemptOffset];
+    // TODO take max prefix length into account
+
+    while (attemptOffset < codes.length) {
+      attemptCodes = attemptCodes + codes[attemptOffset];
+      if (collationElements.get(attemptCodes) !== undefined) {
+        lookedupOffset = attemptOffset;
+        lookedupCodes = attemptCodes;
+      }
+      attemptOffset++;
     }
 
     if (lookedupCodes) {
-       //console.log('lookedup: ', Array.from(lookedupCodes).map(c => c.codePointAt(0).toString(16).toUpperCase()));
 
       let extraOffset = lookedupOffset+1;
 
@@ -76,12 +79,8 @@ function sortKey(str) {
       let foundCCC;
       while (extraOffset < codes.length && (foundCCC = ccc.get(codes[extraOffset].codePointAt(0)))) {
         if (foundCCC > maxCCC && collationElements.get(lookedupCodes + codes[extraOffset]) !== undefined) {
-//          console.log('found an extra');
           lookedupCodes = lookedupCodes + codes[extraOffset];
-          //console.log('before slice codes', codes.map(c => c.codePointAt(0).toString(16).toUpperCase()));
           codes.splice(extraOffset, 1);
-          //console.log('codes', codes.map(c => c.codePointAt(0).toString(16).toUpperCase()));
-          //console.log('now lookedup: ', Array.from(lookedupCodes).map(c => c.codePointAt(0).toString(16).toUpperCase()));
         }
         maxCCC = Math.max(foundCCC, maxCCC);
         extraOffset++;
