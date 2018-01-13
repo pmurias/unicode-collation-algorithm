@@ -12,6 +12,14 @@ const isIdeograph = /^(?:[\u3400-\u4DB5\u4E00-\u9FEA\uFA0E\uFA0F\uFA11\uFA13\uFA
 
 const isCoreHan = xregexp('^(?:\\p{InCJK_Unified_Ideographs}|\p{InCJK_Compatibility_Ideographs)$', 'A');
 
+const PRIMARY = 1
+const PRIMARY_REVERSED = 2
+const SECONDARY = 4
+const SECONDARY_REVERSED = 8
+const TERTIARY =  16
+const TERTIARY_REVERSED = 32
+const QUATERNARY = 64
+const QUATERNARY_REVERSED = 128
 
 let collationElements;
 
@@ -42,10 +50,10 @@ function readAllKeys() {
 }
 
 
-function sortKey(str) {
+function sortKeyRaw(str, flags) {
   if (!collationElements) readAllKeys();
 
-  const codes = Array.from(unorm.nfd(str));
+  const codes = Array.from(str);
 
   const elements = [];
 
@@ -115,9 +123,16 @@ function sortKey(str) {
   let keySize = 0;
 
   for (let level=0; level < 3; level++) {
+    const isNormal = flags & (1 << (2*level));
+    const isReversed = flags & (1 << (2*level + 1));
+    if (!isNormal && !isReversed) {
+      continue;
+    }
+
     if (level !== 0) {
       keySize += 2;
     }
+
     for (const element of elements) {
       if (element[level]) {
         keySize += 2;
@@ -128,28 +143,54 @@ function sortKey(str) {
   const key = new Buffer(keySize);
 
   let offset = 0;
+
+  let lastReversed;
+
   for (let level=0; level < 3; level++) {
+    let reversed = false;
+    if (flags & (1 << (2*level))) {
+    } else if (flags & (1 << (2*level + 1))) {
+      reversed = true;
+    } else {
+      continue;
+    }
+
     if (level !== 0) {
-       key.writeUInt16BE(0, offset);
+       key.writeUInt16BE(lastReversed ? 2**16 - 1 : 0, offset);
        offset += 2;
     }
 
     for (const element of elements) {
       if (element[level]) {
-        key.writeUInt16BE(element[level], offset);
+        key.writeUInt16BE(reversed ? 2**16 - 1 - element[level] : element[level], offset);
         offset += 2;
       }
     }
-
+    lastReversed = reversed;
   }
 
   return key;
 }
 
+function sortKey(str, flags) {
+  return sortKeyRaw(unorm.nfd(str), flags);
+}
+
 exports.sortKey = sortKey;
 
-function compare(a, b) {
-  return sortKey(a).compare(sortKey(b));
+function compare(a, b, flags) {
+  const normalizedA = unorm.nfd(a);
+  const normalizedB = unorm.nfd(b);
+
+  const cmp = sortKeyRaw(normalizedA, flags).compare(sortKeyRaw(normalizedB, flags));
+
+
+  if (flags & QUATERNARY && cmp === 0) {
+    return (normalizedA < normalizedB) ? -1 : (normalizedA > normalizedB ? 1 : 0);
+  } else if (flags & QUATERNARY_REVERSED && cmp === 0) {
+    return (normalizedA < normalizedB) ? 1 : (normalizedA > normalizedB ? -1 : 0);
+  }
+  return cmp;
 }
 
 module.exports.compare = compare;
