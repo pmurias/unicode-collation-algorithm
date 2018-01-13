@@ -3,16 +3,24 @@ const fs = require('fs');
 
 const xregexp = require('xregexp');
 
+const UnicodeTrie = require('unicode-trie')
+const unorm = require('unorm');
+const path = require('path');
+
 ///transpiled version of \p{Unified_Ideograph}/u
 const isIdeograph = /^(?:[\u3400-\u4DB5\u4E00-\u9FEA\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879][\uDC00-\uDFFF]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0])$/;
 
 const isCoreHan = xregexp('^(?:\\p{InCJK_Unified_Ideographs}|\p{InCJK_Compatibility_Ideographs)$', 'A');
 
+
 let collationElements;
+
+
+const ccc = new UnicodeTrie(fs.readFileSync(__dirname + '/ccc.trie'));
 
 function readAllKeys() {
   collationElements = new Map();
-  const lines = fs.readFileSync('allkeys.txt', 'ascii').split(/\n/);
+  const lines = fs.readFileSync(path.join(__dirname, 'allkeys.txt'), 'ascii').split(/\n/);
   for (const line of lines) {
     if (line.match(/^#/) || line.match(/^\s*$/)) {
     } else if (line.match(/^(?:@version|@implicitweight)/)) {
@@ -37,7 +45,8 @@ function readAllKeys() {
 function sortKey(str) {
   if (!collationElements) readAllKeys();
 
-  const codes = Array.from(str.normalize('NFD'));
+  const codes = Array.from(unorm.nfd(str));
+//  console.log('codepoints: ', codes, codes.map(c => c.codePointAt(0).toString(16).toUpperCase()));
 
   const elements = [];
 
@@ -58,6 +67,26 @@ function sortKey(str) {
     }
 
     if (lookedupCodes) {
+       //console.log('lookedup: ', Array.from(lookedupCodes).map(c => c.codePointAt(0).toString(16).toUpperCase()));
+
+      let extraOffset = lookedupOffset+1;
+
+      let maxCCC = 0;
+
+      let foundCCC;
+      while (extraOffset < codes.length && (foundCCC = ccc.get(codes[extraOffset].codePointAt(0)))) {
+        if (foundCCC > maxCCC && collationElements.get(lookedupCodes + codes[extraOffset]) !== undefined) {
+//          console.log('found an extra');
+          lookedupCodes = lookedupCodes + codes[extraOffset];
+          //console.log('before slice codes', codes.map(c => c.codePointAt(0).toString(16).toUpperCase()));
+          codes.splice(extraOffset, 1);
+          //console.log('codes', codes.map(c => c.codePointAt(0).toString(16).toUpperCase()));
+          //console.log('now lookedup: ', Array.from(lookedupCodes).map(c => c.codePointAt(0).toString(16).toUpperCase()));
+        }
+        maxCCC = Math.max(foundCCC, maxCCC);
+        extraOffset++;
+      }
+
       for (const element of collationElements.get(lookedupCodes)) {
         elements.push(element);
       }
