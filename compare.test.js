@@ -1,8 +1,8 @@
-const compare = require('./index.js').compare;
+const uca = require('./index.js');
 
 test('simple comparsion', () => {
-  expect(compare('foo', 'foo')).toBe(0);
-  expect(compare('a', 'b')).toBe(-1);
-  expect(compare('b', 'a')).toBe(1);
+  expect(uca.compare('foo', 'foo', uca.PRIMARY)).toBe(0);
+  expect(uca.compare('a', 'b', uca.PRIMARY)).toBe(-1);
+  expect(uca.compare('b', 'a', uca.PRIMARY)).toBe(1);
 
 });

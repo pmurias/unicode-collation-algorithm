@@ -193,4 +193,13 @@ function compare(a, b, flags) {
   return cmp;
 }
 
-module.exports.compare = compare;
+exports.PRIMARY = 1
+exports.PRIMARY_REVERSED = 2
+exports.SECONDARY = 4
+exports.SECONDARY_REVERSED = 8
+exports.TERTIARY =  16
+exports.TERTIARY_REVERSED = 32
+exports.QUATERNARY = 64
+exports.QUATERNARY_REVERSED = 128
+
+exports.compare = compare;
