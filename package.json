@@ -12,11 +12,16 @@
   },
   "author": "Paweł Murias",
   "license": "Artistic-2.0",
+  "bugs": "https://github.com/pmurias/unicode-collation-algorithm/issues",
   "devDependencies": {
     "jest": "^22.0.5"
   },
   "dependencies": {
     "unicode-trie": "^0.3.1",
     "xregexp": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pmurias/unicode-collation-algorithm.git"
   }
 }
