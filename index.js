@@ -1,8 +1,6 @@
 'use strict';
 const fs = require('fs');
 
-const xregexp = require('xregexp');
-
 const UnicodeTrie = require('unicode-trie')
 const unorm = require('./unorm.js');
 const path = require('path');
@@ -10,7 +8,11 @@ const path = require('path');
 ///transpiled version of \p{Unified_Ideograph}/u
 const isIdeograph = /^(?:[\u3400-\u4DB5\u4E00-\u9FEA\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879][\uDC00-\uDFFF]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0])$/;
 
-const isCoreHan = xregexp('^(?:\\p{InCJK_Unified_Ideographs}|\p{InCJK_Compatibility_Ideographs)$', 'A');
+
+function isCoreHan(cp) {
+    return (0x4E00  <= cp && cp <= 0x9FFF ) || (0xF900  <= cp && cp <= 0xFAFF);
+}
+
 
 const PRIMARY = 1
 const PRIMARY_REVERSED = 2
@@ -107,7 +109,7 @@ function sortKeyRaw(str, flags) {
         elements.push([0xFB01, 0x0020, 0x0002], [(codePoint - 0x1B170) | 0x8000, 0, 0]);
       } else {
         if (isIdeograph.test(unknown)) {
-          if (isCoreHan.test(unknown)) {
+          if (isCoreHan(unknown.codePointAt(0))) {
             elements.push([0xFB40 + (codePoint >> 15),0x0020,0x0002]);
           } else {
             elements.push([0xFB80 + (codePoint >> 15),0x0020,0x0002]);
