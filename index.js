@@ -142,7 +142,7 @@ function sortKeyRaw(str, flags) {
     }
   }
 
-  const key = new Buffer(keySize);
+  const key = Buffer.alloc(keySize);
 
   let offset = 0;
 
