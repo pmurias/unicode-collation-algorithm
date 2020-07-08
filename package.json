@@ -1,26 +1,45 @@
 {
-  "name": "unicode-collation-algorithm",
-  "version": "0.0.3",
-  "description": "Implement the TR #10 - Unicode Collation Algorithm",
-  "main": "index.js",
-  "directories": {
-    "doc": "doc",
-    "test": "test"
-  },
-  "scripts": {
-    "test": "jest"
-  },
-  "author": "Paweł Murias",
-  "license": "Artistic-2.0",
-  "bugs": "https://github.com/pmurias/unicode-collation-algorithm/issues",
-  "devDependencies": {
-    "jest": "^22.0.5"
-  },
-  "dependencies": {
-    "unicode-trie": "^0.3.1",
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pmurias/unicode-collation-algorithm.git"
-  }
+	"name": "unicode-collation-algorithm2",
+	"version": "0.1.0",
+	"description": "Implement the TR #10 - Unicode Collation Algorithm",
+	"main": "build/index.js",
+	"scripts": {
+		"clean": "del-cli build",
+		"build": "tsc",
+		"lint": "eslint -c ./.eslintrc.js --ext .ts src/",
+		"lint:fix": "eslint -c ./.eslintrc.js --ext .ts src/ --fix",
+		"test": "mocha -r ts-node/register test/**/*.ts"
+	},
+	"author": "Shinonomekazan Co., Ltd.",
+	"license": "Artistic-2.0",
+	"bugs": "https://github.com/shinonomekazan/unicode-collation-algorithm2/issues",
+	"devDependencies": {
+		"@types/chai": "^4.2.7",
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.7.4",
+		"@typescript-eslint/eslint-plugin": "^3.6.0",
+		"@typescript-eslint/parser": "^3.6.0",
+		"chai": "^4.2.0",
+		"del-cli": "^3.0.1",
+		"eslint": "^7.4.0",
+		"eslint-config-airbnb-base": "^14.2.0",
+		"eslint-import-resolver-node": "^0.3.4",
+		"eslint-plugin-import": "^2.22.0",
+		"mocha": "^6.2.2",
+		"ts-node": "^8.10.2",
+		"typescript": "^3.9.6"
+	},
+	"dependencies": {
+		"unicode-trie": "^2.0.0",
+		"unorm": "^1.6.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/shinonomekazan/unicode-collation-algorithm2.git"
+	},
+	"files": [
+		"build",
+		"ccc.trie",
+		"allkeys.txt"
+	]
 }

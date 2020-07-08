@@ -1,0 +1,13 @@
+.DS_Store
+node_modules
+.env
+local.js
+build
+dist
+*.log
+*.lerna_backup
+tmp
+.nyc_output
+coverage
+*.zip
+.serverless
