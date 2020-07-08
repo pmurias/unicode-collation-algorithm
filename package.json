@@ -1,6 +1,6 @@
 {
 	"name": "unicode-collation-algorithm2",
-	"version": "1.0.0",
+	"version": "0.2.0",
 	"description": "Implement the TR #10 - Unicode Collation Algorithm",
 	"main": "build/index.js",
 	"scripts": {
@@ -8,7 +8,7 @@
 		"build": "tsc",
 		"lint": "eslint -c ./.eslintrc.js --ext .ts src/",
 		"lint:fix": "eslint -c ./.eslintrc.js --ext .ts src/ --fix",
-		"test": "mocha -r ts-node/register test/**/*.ts"
+		"test": "npm run build && mocha -r ts-node/register test/**/*.ts"
 	},
 	"author": "Shinonomekazan Co., Ltd.",
 	"license": "Artistic-2.0",

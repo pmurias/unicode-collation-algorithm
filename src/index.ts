@@ -13,15 +13,6 @@ function isCoreHan(cp: number) {
 	return (cp >= 0x4E00 && cp <= 0x9FFF) || (cp >= 0xF900 && cp <= 0xFAFF);
 }
 
-export const PRIMARY = 1;
-export const PRIMARY_REVERSED = 2;
-export const SECONDARY = 4;
-export const SECONDARY_REVERSED = 8;
-export const TERTIARY = 16;
-export const TERTIARY_REVERSED = 32;
-export const QUATERNARY = 64;
-export const QUATERNARY_REVERSED = 128;
-
 let collationElements: Map<string, number[][]> | null = null;
 let ccc: any | null = null;
 
@@ -66,13 +57,6 @@ function initCollation(collationFilePath: string) {
 			resolve();
 		});
 	});
-}
-
-export function init() {
-	return Promise.all([
-		initCcc(path.join(__dirname, "..", "ccc.trie")),
-		initCollation(path.join(__dirname, "..", "allkeys.txt")),
-	]);
 }
 
 function sortKeyRaw(str: string, flags: number) {
@@ -200,13 +184,27 @@ function sortKeyRaw(str: string, flags: number) {
 	return key;
 }
 
-function sortKey(str: string, flags: number) {
+export const PRIMARY = 1;
+export const PRIMARY_REVERSED = 2;
+export const SECONDARY = 4;
+export const SECONDARY_REVERSED = 8;
+export const TERTIARY = 16;
+export const TERTIARY_REVERSED = 32;
+export const QUATERNARY = 64;
+export const QUATERNARY_REVERSED = 128;
+
+export function init() {
+	return Promise.all([
+		initCcc(path.join(__dirname, "..", "ccc.trie")),
+		initCollation(path.join(__dirname, "..", "allkeys.txt")),
+	]);
+}
+
+export function sortKey(str: string, flags: number) {
 	return sortKeyRaw(unorm.nfd(str), flags);
 }
 
-exports.sortKey = sortKey;
-
-export function compare(a: string, b: string, flags: number) {
+export function compareWithFlags(a: string, b: string, flags: number) {
 	const normalizedA = unorm.nfd(a);
 	const normalizedB = unorm.nfd(b);
 
@@ -222,4 +220,16 @@ export function compare(a: string, b: string, flags: number) {
 		return 0;
 	}
 	return cmp;
+}
+
+export function compare(a: string, b: string) {
+	return compareWithFlags(a, b, PRIMARY);
+}
+
+export function isEquals(a: string, b: string) {
+	return compareWithFlags(a, b, PRIMARY) === 0;
+}
+
+export function isEqualsWithFlags(a: string, b: string, flags: number) {
+	return compareWithFlags(a, b, flags) === 0;
 }
